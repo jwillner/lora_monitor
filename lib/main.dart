@@ -83,63 +83,92 @@ class BleManager extends ChangeNotifier {
     }
   }
 
-  Future<void> connectNus(BleRow row) async {
-    if (isConnecting) return;
+Future<void> connectNus(BleRow row) async {
+  if (isConnecting) return;
 
-    await disconnect();
+  // Wichtig: Scan stoppen vor Connect
+  try {
+    await FlutterBluePlus.stopScan();
+  } catch (_) {}
+  await Future.delayed(const Duration(milliseconds: 200));
 
-    isConnecting = true;
-    notifyListeners();
+  await disconnect();
 
+  isConnecting = true;
+  notifyListeners();
+
+  try {
+    // 1) Connect
+    await row.device.connect(timeout: const Duration(seconds: 10));
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // 2) (Optional) MTU – wenn Plugin es ohnehin macht, ist es ok, das wegzulassen
     try {
-      await row.device.connect(timeout: const Duration(seconds: 10));
-      final services = await row.device.discoverServices();
+      await row.device.requestMtu(255);
+    } catch (_) {}
+    await Future.delayed(const Duration(milliseconds: 250));
 
-      BluetoothCharacteristic? rx;
-      BluetoothCharacteristic? tx;
+    // 3) Discover services
+    final services = await row.device.discoverServices();
+    await Future.delayed(const Duration(milliseconds: 250));
 
-      for (final s in services) {
-        if (s.uuid != nusServiceUuid) continue;
-        for (final c in s.characteristics) {
-          if (c.uuid == nusRxUuid) rx = c;
-          if (c.uuid == nusTxUuid) tx = c;
-        }
+    BluetoothCharacteristic? rx;
+    BluetoothCharacteristic? tx;
+
+    for (final s in services) {
+      if (s.uuid != nusServiceUuid) continue;
+      for (final c in s.characteristics) {
+        if (c.uuid == nusRxUuid) rx = c;
+        if (c.uuid == nusTxUuid) tx = c;
       }
-
-      if (rx == null || tx == null) {
-        await row.device.disconnect();
-        throw Exception('NUS RX/TX nicht gefunden');
-      }
-
-      // enable notifications
-      await tx.setNotifyValue(true);
-
-      // subscribe to notifications
-      await _txSub?.cancel();
-      _txSub = tx.onValueReceived.listen((bytes) {
-        _onTxBytes(bytes);
-      });
-
-      connectedDevice = row.device;
-      connectedId = row.id;
-      connectedName = row.name;
-      _rx = rx;
-      _tx = tx;
-
-      isConnected = true;
-      isConnecting = false;
-
-      // Optional: sofort Info abfragen
-      // await requestDeviceInfo();
-
-      notifyListeners();
-    } catch (e) {
-      isConnecting = false;
-      isConnected = false;
-      notifyListeners();
-      rethrow;
     }
+
+    if (rx == null || tx == null) {
+      await row.device.disconnect();
+      throw Exception('NUS RX/TX nicht gefunden');
+    }
+
+    // 4) Enable notifications (Descriptor write) – mit Retry wegen Android GATT Queue
+    Future<void> enableNotifyWithRetry() async {
+      try {
+        await tx!.setNotifyValue(true);
+      } catch (_) {
+        await Future.delayed(const Duration(milliseconds: 700));
+        await tx!.setNotifyValue(true);
+      }
+      // Android braucht oft noch etwas Zeit, bis CCCD wirklich aktiv ist
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
+    await enableNotifyWithRetry();
+
+    // 5) Subscribe to notifications
+    await _txSub?.cancel();
+    _txSub = tx.onValueReceived.listen(_onTxBytes);
+
+    // 6) Store
+    connectedDevice = row.device;
+    connectedId = row.id;
+    connectedName = row.name;
+    _rx = rx;
+    _tx = tx;
+
+    isConnected = true;
+    isConnecting = false;
+    notifyListeners();
+  } catch (e) {
+    // falls connect halb-offen blieb: sauber trennen
+    try {
+      await row.device.disconnect();
+    } catch (_) {}
+
+    isConnecting = false;
+    isConnected = false;
+    notifyListeners();
+    rethrow;
   }
+}
+
 
   void _onTxBytes(List<int> bytes) {
     // We expect JSON per line (newline terminated)

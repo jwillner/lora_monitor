@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Heltec Master is a Flutter BLE (Bluetooth Low Energy) scanner application for discovering and inspecting Heltec devices. The app scans for nearby BLE devices, displays signal strength (RSSI), and can connect to read service UUIDs.
+Heltec Master is a Flutter BLE (Bluetooth Low Energy) application for discovering and communicating with Heltec devices via the Nordic UART Service (NUS). The app scans for nearby BLE devices, connects via NUS, and exchanges JSON-based commands/data.
 
 ## Build and Development Commands
 
@@ -39,30 +39,46 @@ dart format lib/
 
 ## Architecture
 
-**Single-file architecture**: The entire application lives in `lib/main.dart` (~336 lines). There is no modular separation.
+**Single-file architecture**: The entire application lives in `lib/main.dart` (~590 lines).
 
-**State management**: Uses Flutter's built-in `StatefulWidget` pattern with no external state management library.
+**State management**:
+- `BleManager` (ChangeNotifier) - Global singleton for BLE connection state and NUS communication
+- `StatefulWidget` for screen-local state (scan results, selection)
 
-**Widget hierarchy**:
-- `BleScannerApp` - MaterialApp root with Material 3 theme
-- `BleScannerHome` - Main stateful widget containing all UI and logic
+**Screens**:
+- `HomeScreen` - Main menu with navigation to Scan+Connect and Device screens
+- `ScanConnectScreen` - BLE scanning and device selection, connects via NUS
+- `DeviceScreen` - Shows connected device info, sends commands, displays JSON responses
 
-**Key data structure**:
+**Key classes**:
 ```dart
 class BleRow {
   final BluetoothDevice device;
   final String id;           // MAC address
   final String name;
   final int rssi;            // Signal strength
-  final List<Guid> services; // Discovered BLE services
+}
+
+class BleManager extends ChangeNotifier {
+  // Manages NUS connection, RX/TX characteristics, JSON parsing
 }
 ```
+
+## NUS (Nordic UART Service) Protocol
+
+**UUIDs**:
+- Service: `6e400001-b5a3-f393-e0a9-e50e24dcca9e`
+- RX (write): `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
+- TX (notify): `6e400003-b5a3-f393-e0a9-e50e24dcca9e`
+
+**Communication**: JSON lines over NUS. Send commands like `{"cmd":"get_info"}`, receive device info as JSON (devicename, serial, battery, position, brightness, temperature).
 
 ## Core Functionality
 
 1. **BLE Scanning** - Requests permissions, scans for 6 seconds, sorts devices by RSSI
-2. **Permission Handling** - Uses `permission_handler` for bluetoothScan, bluetoothConnect, locationWhenInUse
-3. **Service Discovery** - Connects to selected device, discovers services, displays UUIDs
+2. **NUS Connection** - Connects to device, discovers NUS service, sets up RX/TX characteristics with notifications
+3. **JSON Communication** - Sends commands via RX, receives newline-terminated JSON via TX notifications
+4. **Permission Handling** - Uses `permission_handler` for bluetoothScan, bluetoothConnect, locationWhenInUse
 
 ## Key Dependencies
 
