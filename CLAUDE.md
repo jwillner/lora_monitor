@@ -39,30 +39,31 @@ dart format lib/
 
 ## Architecture
 
-**Single-file architecture**: The entire application lives in `lib/main.dart` (~590 lines).
+**Project structure**:
+```
+lib/
+├── main.dart              # Entry point
+├── app.dart               # HeltecApp MaterialApp widget
+├── constants/
+│   └── nus_uuids.dart     # NUS service UUIDs
+├── models/
+│   └── ble_row.dart       # BleRow data class
+├── services/
+│   └── ble_manager.dart   # BleManager (NUS connection, JSON parsing)
+└── screens/
+    ├── home_screen.dart
+    ├── scan_connect_screen.dart
+    └── device_screen.dart
+```
 
 **State management**:
-- `BleManager` (ChangeNotifier) - Global singleton for BLE connection state and NUS communication
+- `BleManager` (ChangeNotifier) - Global singleton (`bleManager`) for BLE connection state and NUS communication
 - `StatefulWidget` for screen-local state (scan results, selection)
 
 **Screens**:
-- `HomeScreen` - Main menu with navigation to Scan+Connect and Device screens
-- `ScanConnectScreen` - BLE scanning and device selection, connects via NUS
-- `DeviceScreen` - Shows connected device info, sends commands, displays JSON responses
-
-**Key classes**:
-```dart
-class BleRow {
-  final BluetoothDevice device;
-  final String id;           // MAC address
-  final String name;
-  final int rssi;            // Signal strength
-}
-
-class BleManager extends ChangeNotifier {
-  // Manages NUS connection, RX/TX characteristics, JSON parsing
-}
-```
+- `HomeScreen` - Main menu with navigation tiles
+- `ScanConnectScreen` - BLE scanning, device list, NUS connection
+- `DeviceScreen` - Device info display, JSON commands, disconnect
 
 ## NUS (Nordic UART Service) Protocol
 
@@ -94,4 +95,3 @@ class BleManager extends ChangeNotifier {
 ## Notes
 
 - UI strings are in German ("Scanning…", "Keine Geräte gefunden", etc.)
-- The test file `test/widget_test.dart` contains Flutter boilerplate, not actual tests for this app
