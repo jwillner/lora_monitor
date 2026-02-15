@@ -22,6 +22,10 @@ class BleManager extends ChangeNotifier {
   /// Device parameters (from JSON)
   Map<String, dynamic> deviceInfo = {};
 
+  /// Tracks set_config response
+  bool? lastAck;
+  String? lastError;
+
   bool isConnecting = false;
   bool isConnected = false;
 
@@ -149,8 +153,14 @@ class BleManager extends ChangeNotifier {
       try {
         final obj = json.decode(trimmed);
         if (obj is Map<String, dynamic>) {
-          deviceInfo = {...deviceInfo, ...obj};
-          notifyListeners();
+          if (obj.containsKey('ack')) {
+            lastAck = obj['ack'] == true;
+            lastError = obj['error']?.toString();
+            notifyListeners();
+          } else {
+            deviceInfo = {...deviceInfo, ...obj};
+            notifyListeners();
+          }
         }
       } catch (_) {
         // not valid json line -> ignore
@@ -166,6 +176,16 @@ class BleManager extends ChangeNotifier {
 
   Future<void> requestDeviceInfo() async {
     await sendLine('{"cmd":"get_info"}');
+  }
+
+  Future<void> sendSetConfig({String? sn, int? devId, String? mode}) async {
+    lastAck = null;
+    lastError = null;
+    final map = <String, dynamic>{'cmd': 'set_config'};
+    if (sn != null) map['sn'] = sn;
+    if (devId != null) map['devId'] = devId;
+    if (mode != null) map['mode'] = mode;
+    await sendLine(json.encode(map));
   }
 }
 
