@@ -16,7 +16,9 @@ Hauptmenü mit Navigation zu den beiden Funktionsbereichen:
 - **Scan+Connect**: BLE-Geräte scannen und verbinden
 - **Device**: Verbundenes Gerät anzeigen und steuern
 
-![Home Screen](screenshots/app_main_screen.jpg)
+| Home | Scan+Connect | Device |
+|:----:|:------------:|:------:|
+| <img src="screenshots/app_main_screen.jpg" width="250"> | <img src="screenshots/app_main_scan+connect_screen.jpg" width="250"> | <img src="screenshots/app_device_screen.jpg" width="250"> |
 
 ### Scan+Connect Screen
 - Automatischer BLE-Scan beim Öffnen (6 Sekunden)
@@ -25,8 +27,6 @@ Hauptmenü mit Navigation zu den beiden Funktionsbereichen:
 - Gerät auswählen und per "Connect (NUS)" verbinden
 - Rescan-Button zum erneuten Scannen
 - Statusanzeige der aktuellen Verbindung
-
-![Scan+Connect Screen](screenshots/app_main_scan+connect_screen.jpg)
 
 ### Device Screen
 - Anzeige des verbundenen Geräts und Verbindungsstatus
@@ -45,8 +45,6 @@ Hauptmenü mit Navigation zu den beiden Funktionsbereichen:
   - Senden-Button zum Übertragen der Konfiguration
   - ACK/Error-Rückmeldung per Snackbar
 - Disconnect-Button zum Trennen der Verbindung
-
-![Device Screen](screenshots/app_device_screen.jpg)
 
 ## Hardware
 
