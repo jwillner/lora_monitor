@@ -16,6 +16,8 @@ Hauptmenü mit Navigation zu den beiden Funktionsbereichen:
 - **Scan+Connect**: BLE-Geräte scannen und verbinden
 - **Device**: Verbundenes Gerät anzeigen und steuern
 
+![Home Screen](screenshots/app_main_screen.jpg)
+
 ### Scan+Connect Screen
 - Automatischer BLE-Scan beim Öffnen (6 Sekunden)
 - Liste gefundener Geräte, sortiert nach Signalstärke (RSSI)
@@ -24,17 +26,36 @@ Hauptmenü mit Navigation zu den beiden Funktionsbereichen:
 - Rescan-Button zum erneuten Scannen
 - Statusanzeige der aktuellen Verbindung
 
+![Scan+Connect Screen](screenshots/app_main_scan+connect_screen.jpg)
+
 ### Device Screen
 - Anzeige des verbundenen Geräts und Verbindungsstatus
 - "Read Info (JSON via NUS)"-Button zum Abrufen der Geräteinformationen
 - Anzeige der empfangenen Daten:
   - DeviceName
   - Serial
-  - Battery
   - Position
-  - Brightness
   - Temperature
+  - Humidity
+  - Time
+- **Konfiguration** (set_config):
+  - Seriennummer (sn, max. 31 Zeichen)
+  - Device-ID (0–255)
+  - Mode (Off, Steady, Blink Async, Blink Sync, Blink Backlight)
+  - Senden-Button zum Übertragen der Konfiguration
+  - ACK/Error-Rückmeldung per Snackbar
 - Disconnect-Button zum Trennen der Verbindung
+
+![Device Screen](screenshots/app_device_screen.jpg)
+
+## Hardware
+
+Heltec LoRa-Geräte (Receiver und Sender) mit OLED-Display und Antenne:
+
+| Config Mode | Operational Mode | BLE Sync Mode |
+|:-----------:|:----------------:|:-------------:|
+| ![Config Mode](screenshots/devices_config_mode.jpg) | ![Operational Mode](screenshots/devices_operational_mode.jpg) | ![BLE Sync Mode](screenshots/devices_ble_sync_mode.jpg) |
+| Beide Geräte im Config Mode, warten auf BLE-Verbindung | Beide Geräte im Betrieb mit Sensordaten | Receiver im Betrieb, Sender im Config Mode |
 
 ## NUS-Protokoll
 
