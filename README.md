@@ -99,3 +99,48 @@ flutter build apk
 
 - [flutter_blue_plus](https://pub.dev/packages/flutter_blue_plus) - BLE-Kommunikation
 - [permission_handler](https://pub.dev/packages/permission_handler) - Berechtigungsverwaltung
+
+## Entwicklung
+
+### Build-Tools
+
+| Tool | Version | Zweck |
+|------|---------|-------|
+| Flutter SDK | 3.19.5 (stable) | Framework & Build-System |
+| Dart SDK | 3.3.3 | Programmiersprache |
+| Android SDK | minSdk 21, compileSdk via Flutter | Android-Builds |
+| Gradle | mit Android Gradle Plugin | Android Build-Automatisierung |
+| Kotlin | JVM Target 1.8 | Android-Platform-Code |
+
+### Build-Befehle
+
+```bash
+# Dependencies installieren
+flutter pub get
+
+# App im Debug-Modus starten
+flutter run
+
+# Release-APK bauen
+flutter build apk
+
+# Code analysieren
+flutter analyze
+
+# Code formatieren
+dart format lib/
+
+# Tests ausführen
+flutter test
+```
+
+### Entwicklungswerkzeuge
+
+| Tool | Zweck |
+|------|-------|
+| Windows 11 Pro | Entwicklungsplattform (Build 26200.7840) |
+| Android Studio | IDE, Android-Emulator, SDK-Verwaltung |
+| VS Code | Code-Editor mit Flutter/Dart-Extensions |
+| Claude Code (CLI) | KI-gestütztes Coding, Refactoring und Dokumentation |
+| Git | Versionskontrolle |
+| DevTools | Flutter-Debugging und Performance-Analyse |
